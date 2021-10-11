@@ -1,17 +1,54 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="app">
+    <header>
+      <h1>Take a screenshot</h1>
+    </header>
+    <main>
+      <form @submit.prevent="requestScreenshot">
+        <input type="url" name="url" id="url" v-model="url" />
+        <input type="submit" value="Take screenshot" />
+      </form>
+      <a
+        v-if="screenshotUrl != ''"
+        :href="screenshotUrl"
+        target="_blank"
+        download
+      >
+        <img src="" />
+      </a>
+    </main>
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import { ref } from "vue";
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+  name: "App",
+  setup() {
+    const url = ref("http://");
+    const screenshotUrl = ref("");
+
+    const requestScreenshot = async () => {
+      const res = await fetch("http://localhost:5000/screenshot", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: url.value,
+        }),
+      }).then((data) => data.json());
+
+      screenshotUrl.value = `http://localhost:5000/static/screenshots/${res.ID}.png`;
+    };
+
+    return {
+      url,
+      screenshotUrl,
+      requestScreenshot,
+    };
+  },
+};
 </script>
 
 <style>
@@ -22,5 +59,11 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+img {
+  display: block;
+  width: 400px;
+  max-width: 100%;
+  margin: 0 auto;
 }
 </style>
